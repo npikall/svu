@@ -4,8 +4,8 @@ package svu
 import (
 	"context"
 
-	"github.com/caarlos0/svu/v3/internal/git"
 	"github.com/caarlos0/svu/v3/internal/svu"
+	"github.com/caarlos0/svu/v3/internal/vcs"
 )
 
 type option func(o *svu.Options)
@@ -81,14 +81,14 @@ func WithDirectories(directories ...string) Option {
 // ForCurrentBranch look for tags in the current branch only.
 func ForCurrentBranch() Option {
 	return func(o *svu.Options) {
-		o.TagMode = git.TagModeCurrent
+		o.TagMode = vcs.TagModeCurrent
 	}
 }
 
 // ForAllBranches look for tags in all branches.
 func ForAllBranches() Option {
 	return func(o *svu.Options) {
-		o.TagMode = git.TagModeAll
+		o.TagMode = vcs.TagModeAll
 	}
 }
 
@@ -112,7 +112,7 @@ func version(opts ...Option) (string, error) {
 		Ctx:     context.Background(),
 		Action:  svu.Next,
 		Prefix:  "v",
-		TagMode: git.TagModeCurrent,
+		TagMode: vcs.TagModeCurrent,
 	}
 	for _, opt := range opts {
 		option(opt)(options)

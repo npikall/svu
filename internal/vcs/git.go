@@ -1,5 +1,5 @@
-// Package git provides git operations for version management.
-package git
+// Package vcs provides git operations for version management.
+package vcs
 
 import (
 	"context"

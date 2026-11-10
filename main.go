@@ -12,8 +12,8 @@ import (
 
 	"charm.land/fang/v2"
 	goversion "github.com/caarlos0/go-version"
-	"github.com/caarlos0/svu/v3/internal/git"
 	"github.com/caarlos0/svu/v3/internal/svu"
+	"github.com/caarlos0/svu/v3/internal/vcs"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -49,13 +49,13 @@ func main() {
 		SilenceUsage: true,
 		PersistentPreRunE: func(*cobra.Command, []string) error {
 			switch opts.TagMode {
-			case git.TagModeAll, git.TagModeCurrent:
+			case vcs.TagModeAll, vcs.TagModeCurrent:
 			default:
 				return fmt.Errorf(
 					"invalid tag-mode: %q: valid options are %q and %q",
 					opts.TagMode,
-					git.TagModeCurrent,
-					git.TagModeAll,
+					vcs.TagModeCurrent,
+					vcs.TagModeAll,
 				)
 			}
 
@@ -84,7 +84,7 @@ func main() {
 	nextCmd := &cobra.Command{
 		Use:     "next",
 		Aliases: []string{"n"},
-		Short:   "Next version based on git history",
+		Short:   "Next version based on vcs history",
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			opts.Action = svu.Next
 			return runFunc(cmd)
@@ -154,7 +154,7 @@ func main() {
 		cmd.Flags().StringVar(&opts.Pattern, "tag.pattern", "", "ignore tags that do not match the given pattern")
 		cmd.Flags().StringVar(&opts.Prefix, "tag.prefix", "v", "sets a tag custom prefix")
 		cmd.Flags().StringVar(&opts.PrefixOutput, "tag.output", "^tag.prefix^", "set the tag output to use when printing the version (default: 'tag.prefix')")
-		cmd.Flags().StringVar(&opts.TagMode, "tag.mode", git.TagModeAll, "determine if it should look for tags in all branches, or just the current one")
+		cmd.Flags().StringVar(&opts.TagMode, "tag.mode", vcs.TagModeAll, "determine if it should look for tags in all branches, or just the current one")
 		cmd.Flags().StringVar(&opts.PreRelease, "prerelease", "", "sets the version prerelease")
 		cmd.Flags().StringVar(&opts.Metadata, "metadata", "", "sets the version metadata")
 		rootCmd.AddCommand(cmd)
@@ -175,7 +175,7 @@ func main() {
 		viper.AutomaticEnv()
 		viper.SetEnvPrefix("svu")
 		viper.AddConfigPath(cfgPath)
-		viper.AddConfigPath(git.Root(context.Background()))
+		viper.AddConfigPath(vcs.Root(context.Background()))
 		viper.AddConfigPath(config)
 		viper.AddConfigPath(home)
 		viper.SetConfigType("yaml")

@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
-	"github.com/caarlos0/svu/v3/internal/git"
+	"github.com/caarlos0/svu/v3/internal/vcs"
 )
 
 type Action uint
@@ -60,7 +60,7 @@ type VersionInfo struct {
 }
 
 func Version(opts Options) (string, error) {
-	tag, err := git.DescribeTag(opts.Ctx, opts.TagMode, opts.Pattern)
+	tag, err := vcs.DescribeTag(opts.Ctx, opts.TagMode, opts.Pattern)
 	if err != nil {
 		return "", fmt.Errorf("failed to get current tag for repo: %w", err)
 	}
@@ -204,7 +204,7 @@ func findNextWithGitLog(
 	tag string,
 	opts Options,
 ) (semver.Version, error) {
-	log, err := git.Changelog(opts.Ctx, tag, opts.Directories)
+	log, err := vcs.Changelog(opts.Ctx, tag, opts.Directories)
 	if err != nil {
 		return semver.Version{}, fmt.Errorf("failed to get changelog: %w", err)
 	}
@@ -212,20 +212,20 @@ func findNextWithGitLog(
 	return findNext(current, log, opts), nil
 }
 
-func isBreaking(commit git.Commit) bool {
+func isBreaking(commit vcs.Commit) bool {
 	return breakingBody.MatchString(commit.Body) || breaking.MatchString(commit.Title)
 }
 
-func isFeature(commit git.Commit) bool {
+func isFeature(commit vcs.Commit) bool {
 	return feature.MatchString(commit.Title)
 }
 
-func isPatch(commit git.Commit) bool {
+func isPatch(commit vcs.Commit) bool {
 	return patch.MatchString(commit.Title)
 }
 
-func findNext(current *semver.Version, changes []git.Commit, opts Options) semver.Version {
-	var major, minor, patch *git.Commit
+func findNext(current *semver.Version, changes []vcs.Commit, opts Options) semver.Version {
+	var major, minor, patch *vcs.Commit
 	for _, commit := range changes {
 		if isBreaking(commit) {
 			major = &commit

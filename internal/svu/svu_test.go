@@ -5,12 +5,12 @@ import (
 	"testing"
 
 	"github.com/Masterminds/semver/v3"
-	"github.com/caarlos0/svu/v3/internal/git"
+	"github.com/caarlos0/svu/v3/internal/vcs"
 	"github.com/stretchr/testify/require"
 )
 
 func TestIsBreaking(t *testing.T) {
-	for _, commit := range []git.Commit{
+	for _, commit := range []vcs.Commit{
 		{Title: "feat!: foo"},
 		{Title: "chore(lala)!: foo"},
 		{Title: "docs: lalala", Body: "BREAKING CHANGE: lalal"},
@@ -21,7 +21,7 @@ func TestIsBreaking(t *testing.T) {
 		})
 	}
 
-	for _, commit := range []git.Commit{
+	for _, commit := range []vcs.Commit{
 		{Title: "feat: foo"},
 		{Title: "chore(lol): foo"},
 		{Title: "docs: lalala"},
@@ -36,7 +36,7 @@ func TestIsBreaking(t *testing.T) {
 }
 
 func TestIsFeature(t *testing.T) {
-	for _, commit := range []git.Commit{
+	for _, commit := range []vcs.Commit{
 		{Title: "feat: foo"},
 		{Title: "feat(lalal): foobar"},
 	} {
@@ -45,7 +45,7 @@ func TestIsFeature(t *testing.T) {
 		})
 	}
 
-	for _, commit := range []git.Commit{
+	for _, commit := range []vcs.Commit{
 		{Title: "fix: foo"},
 		{Title: "chore: foo"},
 		{Title: "docs: lalala"},
@@ -61,7 +61,7 @@ func TestIsFeature(t *testing.T) {
 }
 
 func TestIsPatch(t *testing.T) {
-	for _, commit := range []git.Commit{
+	for _, commit := range []vcs.Commit{
 		{Title: "fix: foo"},
 		{Title: "fix(lalal): lalala"},
 	} {
@@ -70,7 +70,7 @@ func TestIsPatch(t *testing.T) {
 		})
 	}
 
-	for _, commit := range []git.Commit{
+	for _, commit := range []vcs.Commit{
 		{Title: "chore: foobar"},
 		{Title: "docs: something"},
 		{Title: "invalid commit"},
@@ -88,17 +88,17 @@ func TestFindNext(t *testing.T) {
 	version2 := semver.MustParse("v2.4.12")
 	version3 := semver.MustParse("v3.4.5-beta34+ads")
 	for expected, next := range map[string]semver.Version{
-		"0.4.5": findNext(version0a, []git.Commit{{Title: "chore: should do nothing"}}, Options{Ctx: t.Context()}),
-		"0.4.6": findNext(version0a, []git.Commit{{Title: "fix: inc patch"}}, Options{Ctx: t.Context()}),
-		"0.5.0": findNext(version0a, []git.Commit{{Title: "feat: inc minor"}}, Options{Ctx: t.Context()}),
-		"1.0.0": findNext(version0b, []git.Commit{{Title: "feat!: inc minor"}}, Options{Ctx: t.Context()}),
-		"0.6.0": findNext(version0b, []git.Commit{{Title: "feat!: inc minor"}}, Options{Ctx: t.Context(), KeepV0: true}),
-		"1.2.3": findNext(version1, []git.Commit{{Title: "chore: should do nothing"}}, Options{Ctx: t.Context()}),
-		"1.2.4": findNext(version1, []git.Commit{{Title: "chore: always"}}, Options{Ctx: t.Context(), Always: true}),
-		"1.3.0": findNext(version1, []git.Commit{{Title: "feat: inc major"}}, Options{Ctx: t.Context()}),
-		"2.0.0": findNext(version1, []git.Commit{{Title: "chore!: hashbang incs major"}}, Options{Ctx: t.Context()}),
-		"3.0.0": findNext(version2, []git.Commit{{Title: "feat: something", Body: "BREAKING CHANGE: increases major"}}, Options{Ctx: t.Context()}),
-		"3.5.0": findNext(version3, []git.Commit{{Title: "feat: inc major"}}, Options{Ctx: t.Context()}),
+		"0.4.5": findNext(version0a, []vcs.Commit{{Title: "chore: should do nothing"}}, Options{Ctx: t.Context()}),
+		"0.4.6": findNext(version0a, []vcs.Commit{{Title: "fix: inc patch"}}, Options{Ctx: t.Context()}),
+		"0.5.0": findNext(version0a, []vcs.Commit{{Title: "feat: inc minor"}}, Options{Ctx: t.Context()}),
+		"1.0.0": findNext(version0b, []vcs.Commit{{Title: "feat!: inc minor"}}, Options{Ctx: t.Context()}),
+		"0.6.0": findNext(version0b, []vcs.Commit{{Title: "feat!: inc minor"}}, Options{Ctx: t.Context(), KeepV0: true}),
+		"1.2.3": findNext(version1, []vcs.Commit{{Title: "chore: should do nothing"}}, Options{Ctx: t.Context()}),
+		"1.2.4": findNext(version1, []vcs.Commit{{Title: "chore: always"}}, Options{Ctx: t.Context(), Always: true}),
+		"1.3.0": findNext(version1, []vcs.Commit{{Title: "feat: inc major"}}, Options{Ctx: t.Context()}),
+		"2.0.0": findNext(version1, []vcs.Commit{{Title: "chore!: hashbang incs major"}}, Options{Ctx: t.Context()}),
+		"3.0.0": findNext(version2, []vcs.Commit{{Title: "feat: something", Body: "BREAKING CHANGE: increases major"}}, Options{Ctx: t.Context()}),
+		"3.5.0": findNext(version3, []vcs.Commit{{Title: "feat: inc major"}}, Options{Ctx: t.Context()}),
 	} {
 		t.Run(expected, func(t *testing.T) {
 			require.Equal(t, expected, next.String())
