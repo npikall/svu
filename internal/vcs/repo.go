@@ -5,6 +5,8 @@ package vcs
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/gobwas/glob"
@@ -117,5 +119,33 @@ func parseLog(s string) []Commit {
 // ".git" or ".jj" decides; a colocated jj repository has both and is read as
 // git. Without either, git is used so its errors reach the user.
 func Detect(dir string) Repo {
+	if isJJ(dir) {
+		return Repo{jjBackend{dir}}
+	}
 	return Repo{gitBackend{dir}}
+}
+
+func isJJ(dir string) bool {
+	d, err := filepath.Abs(dir)
+	if err != nil {
+		return false
+	}
+	for {
+		if exists(filepath.Join(d, ".git")) {
+			return false
+		}
+		if exists(filepath.Join(d, ".jj")) {
+			return true
+		}
+		parent := filepath.Dir(d)
+		if parent == d {
+			return false
+		}
+		d = parent
+	}
+}
+
+func exists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
 }

@@ -50,6 +50,12 @@ version based on this table:
 > alias gtn='git tag $(svu next)'
 > ```
 
+> [!NOTE]
+> [Jujutsu (jj)](https://github.com/jj-vcs/jj) repositories that are not
+> colocated with git are supported as well: svu reads the tags and the
+> history of the working-copy commit (`@`) with the `jj` CLI, skipping commits
+> without a description. Colocated repositories are read through git.
+
 ## configuration
 
 Every flag option can also be set in a `.svu.yml` in the current
