@@ -110,7 +110,7 @@ func TestCmd(t *testing.T) {
 	ver := func() *semver.Version { return semver.MustParse("1.2.3-pre+123") }
 	t.Run("current", func(t *testing.T) {
 		t.Run("version has meta", func(t *testing.T) {
-			v, err := nextVersion(ver(), "v1.2.3", Options{
+			v, err := nextVersion(vcs.Detect(t.TempDir()), ver(), "v1.2.3", Options{
 				Ctx:    t.Context(),
 				Action: Current,
 			})
@@ -118,7 +118,7 @@ func TestCmd(t *testing.T) {
 			require.Equal(t, "1.2.3-pre+123", v.String())
 		})
 		t.Run("version is clean", func(t *testing.T) {
-			v, err := nextVersion(semver.MustParse("v1.2.3"), "v1.2.3", Options{
+			v, err := nextVersion(vcs.Detect(t.TempDir()), semver.MustParse("v1.2.3"), "v1.2.3", Options{
 				Ctx:    t.Context(),
 				Action: Current,
 			})
@@ -129,7 +129,7 @@ func TestCmd(t *testing.T) {
 
 	t.Run("minor", func(t *testing.T) {
 		t.Run("clean", func(t *testing.T) {
-			v, err := nextVersion(ver(), "v1.2.3", Options{
+			v, err := nextVersion(vcs.Detect(t.TempDir()), ver(), "v1.2.3", Options{
 				Ctx:    t.Context(),
 				Action: Minor,
 			})
@@ -137,7 +137,7 @@ func TestCmd(t *testing.T) {
 			require.Equal(t, "1.3.0", v.String())
 		})
 		t.Run("metadata", func(t *testing.T) {
-			v, err := nextVersion(ver(), "v1.2.3", Options{
+			v, err := nextVersion(vcs.Detect(t.TempDir()), ver(), "v1.2.3", Options{
 				Ctx:      t.Context(),
 				Action:   Minor,
 				Metadata: "124",
@@ -146,7 +146,7 @@ func TestCmd(t *testing.T) {
 			require.Equal(t, "1.3.0+124", v.String())
 		})
 		t.Run("prerelease", func(t *testing.T) {
-			v, err := nextVersion(ver(), "v1.2.3", Options{
+			v, err := nextVersion(vcs.Detect(t.TempDir()), ver(), "v1.2.3", Options{
 				Ctx:        t.Context(),
 				Action:     Minor,
 				PreRelease: "alpha.1",
@@ -155,7 +155,7 @@ func TestCmd(t *testing.T) {
 			require.Equal(t, "1.3.0-alpha.1", v.String())
 		})
 		t.Run("all", func(t *testing.T) {
-			v, err := nextVersion(ver(), "v1.2.3", Options{
+			v, err := nextVersion(vcs.Detect(t.TempDir()), ver(), "v1.2.3", Options{
 				Ctx:        t.Context(),
 				Action:     Minor,
 				PreRelease: "alpha.2",
@@ -168,7 +168,7 @@ func TestCmd(t *testing.T) {
 
 	t.Run("patch", func(t *testing.T) {
 		t.Run("clean", func(t *testing.T) {
-			v, err := nextVersion(semver.MustParse("1.2.3"), "v1.2.3", Options{
+			v, err := nextVersion(vcs.Detect(t.TempDir()), semver.MustParse("1.2.3"), "v1.2.3", Options{
 				Ctx:    t.Context(),
 				Action: Patch,
 			})
@@ -176,7 +176,7 @@ func TestCmd(t *testing.T) {
 			require.Equal(t, "1.2.4", v.String())
 		})
 		t.Run("previous had meta", func(t *testing.T) {
-			v, err := nextVersion(semver.MustParse("1.2.3-alpha.1+1"), "v1.2.3", Options{
+			v, err := nextVersion(vcs.Detect(t.TempDir()), semver.MustParse("1.2.3-alpha.1+1"), "v1.2.3", Options{
 				Ctx:    t.Context(),
 				Action: Patch,
 			})
@@ -184,7 +184,7 @@ func TestCmd(t *testing.T) {
 			require.Equal(t, "1.2.3", v.String())
 		})
 		t.Run("previous had meta + always", func(t *testing.T) {
-			v, err := nextVersion(semver.MustParse("1.2.3-alpha.1+1"), "v1.2.3", Options{
+			v, err := nextVersion(vcs.Detect(t.TempDir()), semver.MustParse("1.2.3-alpha.1+1"), "v1.2.3", Options{
 				Ctx:    t.Context(),
 				Action: Patch,
 				Always: true,
@@ -193,7 +193,7 @@ func TestCmd(t *testing.T) {
 			require.Equal(t, "1.2.3", v.String())
 		})
 		t.Run("previous had meta + always, add meta", func(t *testing.T) {
-			v, err := nextVersion(semver.MustParse("1.2.3-alpha.1+1"), "v1.2.3-alpha.1+1", Options{
+			v, err := nextVersion(vcs.Detect(t.TempDir()), semver.MustParse("1.2.3-alpha.1+1"), "v1.2.3-alpha.1+1", Options{
 				Ctx:        t.Context(),
 				Action:     Patch,
 				Always:     true,
@@ -204,7 +204,7 @@ func TestCmd(t *testing.T) {
 			require.Equal(t, "1.2.3-alpha.2+10", v.String())
 		})
 		t.Run("previous had meta, change it", func(t *testing.T) {
-			v, err := nextVersion(semver.MustParse("1.2.3-alpha.1+1"), "v1.2.3-alpha.1+1", Options{
+			v, err := nextVersion(vcs.Detect(t.TempDir()), semver.MustParse("1.2.3-alpha.1+1"), "v1.2.3-alpha.1+1", Options{
 				Ctx:        t.Context(),
 				Action:     Patch,
 				PreRelease: "alpha.2",
@@ -214,7 +214,7 @@ func TestCmd(t *testing.T) {
 			require.Equal(t, "1.2.3-alpha.2+10", v.String())
 		})
 		t.Run("metadata", func(t *testing.T) {
-			v, err := nextVersion(semver.MustParse("1.2.3"), "v1.2.3", Options{
+			v, err := nextVersion(vcs.Detect(t.TempDir()), semver.MustParse("1.2.3"), "v1.2.3", Options{
 				Ctx:      t.Context(),
 				Action:   Patch,
 				Metadata: "124",
@@ -223,7 +223,7 @@ func TestCmd(t *testing.T) {
 			require.Equal(t, "1.2.4+124", v.String())
 		})
 		t.Run("prerelease", func(t *testing.T) {
-			v, err := nextVersion(semver.MustParse("1.2.3"), "v1.2.3", Options{
+			v, err := nextVersion(vcs.Detect(t.TempDir()), semver.MustParse("1.2.3"), "v1.2.3", Options{
 				Ctx:        t.Context(),
 				Action:     Patch,
 				PreRelease: "alpha.1",
@@ -232,7 +232,7 @@ func TestCmd(t *testing.T) {
 			require.Equal(t, "1.2.4-alpha.1", v.String())
 		})
 		t.Run("all meta", func(t *testing.T) {
-			v, err := nextVersion(semver.MustParse("1.2.3"), "v1.2.3", Options{
+			v, err := nextVersion(vcs.Detect(t.TempDir()), semver.MustParse("1.2.3"), "v1.2.3", Options{
 				Ctx:        t.Context(),
 				Action:     Patch,
 				Metadata:   "125",
@@ -245,7 +245,7 @@ func TestCmd(t *testing.T) {
 
 	t.Run("major", func(t *testing.T) {
 		t.Run("no meta", func(t *testing.T) {
-			v, err := nextVersion(ver(), "v1.2.3", Options{
+			v, err := nextVersion(vcs.Detect(t.TempDir()), ver(), "v1.2.3", Options{
 				Ctx:    t.Context(),
 				Action: Major,
 			})
@@ -253,7 +253,7 @@ func TestCmd(t *testing.T) {
 			require.Equal(t, "2.0.0", v.String())
 		})
 		t.Run("metadata", func(t *testing.T) {
-			v, err := nextVersion(ver(), "v1.2.3", Options{
+			v, err := nextVersion(vcs.Detect(t.TempDir()), ver(), "v1.2.3", Options{
 				Ctx:      t.Context(),
 				Action:   Major,
 				Metadata: "124",
@@ -262,7 +262,7 @@ func TestCmd(t *testing.T) {
 			require.Equal(t, "2.0.0+124", v.String())
 		})
 		t.Run("prerelease", func(t *testing.T) {
-			v, err := nextVersion(ver(), "v1.2.3", Options{
+			v, err := nextVersion(vcs.Detect(t.TempDir()), ver(), "v1.2.3", Options{
 				Ctx:        t.Context(),
 				Action:     Major,
 				PreRelease: "alpha.1",
@@ -271,7 +271,7 @@ func TestCmd(t *testing.T) {
 			require.Equal(t, "2.0.0-alpha.1", v.String())
 		})
 		t.Run("all meta", func(t *testing.T) {
-			v, err := nextVersion(ver(), "v1.2.3", Options{
+			v, err := nextVersion(vcs.Detect(t.TempDir()), ver(), "v1.2.3", Options{
 				Ctx:        t.Context(),
 				Action:     Major,
 				PreRelease: "alpha.2",
@@ -284,11 +284,11 @@ func TestCmd(t *testing.T) {
 
 	t.Run("errors", func(t *testing.T) {
 		t.Run("invalid build", func(t *testing.T) {
-			_, err := nextVersion(semver.MustParse("1.2.3"), "v1.2.3", Options{Ctx: t.Context()})
+			_, err := nextVersion(vcs.Detect(t.TempDir()), semver.MustParse("1.2.3"), "v1.2.3", Options{Ctx: t.Context()})
 			require.Error(t, err)
 		})
 		t.Run("invalid prerelease", func(t *testing.T) {
-			_, err := nextVersion(semver.MustParse("1.2.3"), "v1.2.3", Options{Ctx: t.Context()})
+			_, err := nextVersion(vcs.Detect(t.TempDir()), semver.MustParse("1.2.3"), "v1.2.3", Options{Ctx: t.Context()})
 			require.Error(t, err)
 		})
 	})

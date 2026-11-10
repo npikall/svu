@@ -84,7 +84,7 @@ func main() {
 	nextCmd := &cobra.Command{
 		Use:     "next",
 		Aliases: []string{"n"},
-		Short:   "Next version based on vcs history",
+		Short:   "Next version based on git history",
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			opts.Action = svu.Next
 			return runFunc(cmd)
@@ -175,7 +175,7 @@ func main() {
 		viper.AutomaticEnv()
 		viper.SetEnvPrefix("svu")
 		viper.AddConfigPath(cfgPath)
-		viper.AddConfigPath(vcs.Root(context.Background()))
+		viper.AddConfigPath(vcs.Detect(".").Root(context.Background()))
 		viper.AddConfigPath(config)
 		viper.AddConfigPath(home)
 		viper.SetConfigType("yaml")

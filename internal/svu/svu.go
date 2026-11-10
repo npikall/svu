@@ -60,7 +60,8 @@ type VersionInfo struct {
 }
 
 func Version(opts Options) (string, error) {
-	tag, err := vcs.DescribeTag(opts.Ctx, opts.TagMode, opts.Pattern)
+	repo := vcs.Detect(".")
+	tag, err := repo.DescribeTag(opts.Ctx, opts.TagMode, opts.Pattern)
 	if err != nil {
 		return "", fmt.Errorf("failed to get current tag for repo: %w", err)
 	}
@@ -70,7 +71,7 @@ func Version(opts Options) (string, error) {
 		return "", fmt.Errorf("could not get current version from tag: '%s': %w", tag, err)
 	}
 
-	result, err := nextVersion(current, tag, opts)
+	result, err := nextVersion(repo, current, tag, opts)
 	if err != nil {
 		return "", fmt.Errorf("could not get next tag: '%s': %w", tag, err)
 	}
@@ -83,6 +84,7 @@ func Version(opts Options) (string, error) {
 }
 
 func nextVersion(
+	repo vcs.Repo,
 	current *semver.Version,
 	tag string,
 	opts Options,
@@ -95,7 +97,7 @@ func nextVersion(
 	var err error
 	switch opts.Action {
 	case Next, PreRelease:
-		result, err = findNextWithGitLog(current, tag, opts)
+		result, err = findNextWithLog(repo, current, tag, opts)
 	case Major:
 		result = current.IncMajor()
 	case Minor:
@@ -199,12 +201,13 @@ func getCurrentVersion(tag, prefix string) (*semver.Version, error) {
 	return current, err
 }
 
-func findNextWithGitLog(
+func findNextWithLog(
+	repo vcs.Repo,
 	current *semver.Version,
 	tag string,
 	opts Options,
 ) (semver.Version, error) {
-	log, err := vcs.Changelog(opts.Ctx, tag, opts.Directories)
+	log, err := repo.Changelog(opts.Ctx, tag, opts.Directories)
 	if err != nil {
 		return semver.Version{}, fmt.Errorf("failed to get changelog: %w", err)
 	}
